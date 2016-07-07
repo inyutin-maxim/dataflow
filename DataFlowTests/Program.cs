@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DataFlow;
 
 namespace DataFlowTests
@@ -6,35 +7,69 @@ namespace DataFlowTests
     class Program
     {
         static void Main()
-        {        
-            var lifetime = Lifetime.Define().Lifetime;  
+        {
+            var persons = new List<Person>();
+            var personsLifetimes = new List<LifetimeDef>();
 
-            var person = new Person(lifetime);
-                                                                         
-                         
-            var wrongHeight = person.Height.Changed.Where(x => x > 250 || x < 0).Select(x => $"Wrong Height: {x}");
-            var wrongWeight = person.Weigth.Changed.Where(x => x > 250 || x < 0).Select(x => $"Wrong Weigth: {x}");
-            var wrongSalary = person.Salary.Changed.Where(x => x < 3000).Select(x => $"Wrong Salary: {x}");
+            var gatesLifetime = Lifetime.Define().Lifetime;
 
-            wrongSalary.Zip(wrongHeight).Zip(wrongWeight).Subscribe(x => Console.WriteLine($"Message: {x}"));
-          
+            var weightsGate = new Gate<int>(gatesLifetime);
+            var heightsGate = new Gate<int>(gatesLifetime);
+            var salariesGate = new Gate<int>(gatesLifetime);
 
-            person.Height.Value = 0;
-            person.Height.Value = 20;
-            person.Height.Value = 200;
-            person.Height.Value = 2000;
+            for (int i = 0; i < 10; i++)
+            {
+                var def = Lifetime.Define();
+                var lifetime = def.Lifetime;
+                var person = new Person(lifetime);
 
-            person.Weigth.Value = 0;
-            person.Weigth.Value = 20;
-            person.Weigth.Value = 200;
-            person.Weigth.Value = 2000;
+                weightsGate.AddParentSource(person.Weigth.Changed);
+                heightsGate.AddParentSource(person.Height.Changed);
+                salariesGate.AddParentSource(person.Salary.Changed);
 
-            person.Salary.Value = 0;
-            person.Salary.Value = 20;
-            person.Salary.Value = 200;
-            person.Salary.Value = 4000;
+                persons.Add(person);
+                personsLifetimes.Add(def);
+            }                                       
+
+            var wrongHeight = weightsGate.Where(x => x > 250 || x < 0).Select(x => $"Wrong Height: {x}");
+            var wrongWeight = heightsGate.Where(x => x > 250 || x < 0).Select(x => $"Wrong Weigth: {x}");
+            var wrongSalary = salariesGate.Where(x => x < 3000).Select(x => $"Wrong Salary: {x}");
+
+            wrongSalary.Union(wrongHeight).Union(wrongWeight).Subscribe(x => Console.WriteLine($"Message: {x}"));
+                        
+            Console.WriteLine("=================");
+            PushChanges(persons);
+
+            personsLifetimes[2].Terminate();
+            personsLifetimes[5].Terminate();
+            personsLifetimes[7].Terminate();
+
+            Console.WriteLine("=================");
+            PushChanges(persons);
 
             Console.ReadKey();
+        }
+
+        private static void PushChanges(List<Person> persons)
+        {
+            foreach (var i in new[] {0, 2, 5, 7, 9})
+            {
+                Console.WriteLine($"Changing {i} person");
+                persons[i].Height.Value = 0;
+                persons[i].Height.Value = 20;
+                persons[i].Height.Value = 200;
+                persons[i].Height.Value = 2000;
+
+                persons[i].Weigth.Value = 0;
+                persons[i].Weigth.Value = 20;
+                persons[i].Weigth.Value = 200;
+                persons[i].Weigth.Value = 2000;
+
+                persons[i].Salary.Value = 0;
+                persons[i].Salary.Value = 20;
+                persons[i].Salary.Value = 200;
+                persons[i].Salary.Value = 4000;
+            }
         }
 
         class Person

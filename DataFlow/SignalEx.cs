@@ -24,7 +24,7 @@ namespace DataFlow
             return signal;
         }                   
 
-        public static ISignal<T> Zip<T>(this ISource<T> self, ISource<T> other)
+        public static ISignal<T> Union<T>(this ISource<T> self, ISource<T> other)
         {
             var lf = Lifetime.Define(self.Lifetime.Intersect(other.Lifetime)).Lifetime;
             var signal = new Signal<T>(lf);
@@ -35,7 +35,7 @@ namespace DataFlow
             return signal;
         }
 
-        public static IVoidSignal Zip(this IVoidSource self, IVoidSource other)
+        public static IVoidSignal Union(this IVoidSource self, IVoidSource other)
         {
             var lf = Lifetime.Define(self.Lifetime.Intersect(other.Lifetime)).Lifetime;
             var signal = new VoidSignal(lf);

@@ -16,8 +16,13 @@ namespace DataFlow
 
         public void Subscribe(Action<T> handler)
         {
+            Subscribe(handler, Lifetime);
+        }
+
+        public void Subscribe(Action<T> handler, Lifetime lf)
+        {
             _handlers.Add(handler);
-            Lifetime.Add(() => _handlers.Remove(handler));
+            lf.Add(() => _handlers.Remove(handler));
         }
 
         public void Fire(T value)
@@ -28,6 +33,7 @@ namespace DataFlow
             }
         }
     }
+
     public class VoidSignal : IVoidSignal
     {
         private readonly List<Action> _handlers = new List<Action>();

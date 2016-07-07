@@ -44,7 +44,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\.idea.DataFlow\DataFlowLib\DataFlow.csproj">
+    <ProjectReference Include="..\DataFlow\DataFlow.csproj">
       <Project>{6e716ed6-5303-4221-9069-e63a6c611fe8}</Project>
       <Name>DataFlow</Name>
     </ProjectReference>
