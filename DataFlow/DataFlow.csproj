@@ -39,7 +39,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Gate.cs" />
-    <Compile Include="IProperty.cs" />
+    <Compile Include="Properties\Annotations.cs" />
+    <Compile Include="Property.cs" />
     <Compile Include="ISignal.cs" />
     <Compile Include="ISink.cs" />
     <Compile Include="ISource.cs" />

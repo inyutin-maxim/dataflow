@@ -5,7 +5,7 @@ namespace DataFlow
     public class Gate<T> : ISignal<T>, IMultipleParentSource<T>
     {
         private readonly Lifetime _lifetime;  
-        private Signal<T> _pureSignal;
+        private readonly Signal<T> _pureSignal;
 
         public Gate(Lifetime lifetime)
         {
