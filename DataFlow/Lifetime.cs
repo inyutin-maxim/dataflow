@@ -33,16 +33,16 @@ namespace DataFlow
             Actions.Add(action);
         }
 
-        public Lifetime WhenBoth(Lifetime other)
+        public static Lifetime WhenBoth(Lifetime first, Lifetime other)
         {
             var def = Lifetime.Define();
 
             other.Actions.Insert(0, () =>
             {
-                if (this.IsTerminated) def.Terminate();
+                if (first.IsTerminated) def.Terminate();
             });
 
-            Actions.Insert(0, () =>
+            first.Actions.Insert(0, () =>
             {
                 if (other.IsTerminated) def.Terminate();
             });

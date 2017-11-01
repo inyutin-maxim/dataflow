@@ -35,7 +35,10 @@ namespace DataFlowTests
             var wrongWeight = heightsGate.Where(x => x > 250 || x < 0).Select(x => $"Wrong Weigth: {x}");
             var wrongSalary = salariesGate.Where(x => x < 3000).Select(x => $"Wrong Salary: {x}");
 
-            wrongSalary.Union(wrongHeight).Union(wrongWeight).Subscribe(x => Console.WriteLine($"Message: {x}"));
+            wrongSalary
+                .Union(wrongHeight)
+                .Union(wrongWeight)
+                .Subscribe(x => Console.WriteLine($"Message: {x}"));
                         
             Console.WriteLine("=================");
             PushChanges(persons);
@@ -72,23 +75,28 @@ namespace DataFlowTests
             }
         }
 
-        class Person
+        class Person : IDisposable
         {
-            private Lifetime _lf;
+            private readonly LifetimeDef _lfd;
 
             public Person(Lifetime lf)
             {
-                _lf = lf;
-                Height = new Property<int>(lf);
-                Weigth = new Property<int>(lf);
-                Salary = new Property<int>(lf);
+                _lfd = Lifetime.DefineDependent(lf);
+                Height = new Property<int>(_lfd.Lifetime);
+                Weigth = new Property<int>(_lfd.Lifetime);
+                Salary = new Property<int>(_lfd.Lifetime);
             }
 
             public Property<int> Height { get; }
 
             public Property<int> Weigth { get; }
 
-            public Property<int> Salary { get; } 
+            public Property<int> Salary { get; }
+
+            public void Dispose()
+            {
+                _lfd.Terminate();
+            }
         }
     }
 }
