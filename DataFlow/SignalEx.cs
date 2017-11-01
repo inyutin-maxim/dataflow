@@ -4,30 +4,39 @@ namespace DataFlow
 {
     public static class SignalEx
     {
-        public static ISignal<T> Where<T>(this ISource<T> self, Func<T, bool> predecate)
+        public static IProxy<T> Where<T>(this ISource<T> self, Func<T, bool> predecate)
         {
-            var lf = Lifetime.Define(self.Lifetime).Lifetime;
-            var signal = new Signal<T>(lf);
+            var lf = Lifetime.DefineDependent(self.Lifetime).Lifetime;
+            var signal = new Proxy<T>(lf);
 
-            self.Subscribe(x => { if (predecate(x)) { signal.Fire(x); }});
+            self.Subscribe(x =>
+            {
+                if (predecate(x))
+                {
+                    signal.Fire(x);
+                }
+            });
 
             return signal;
         }     
 
-        public static ISignal<TRes> Select<T, TRes>(this ISource<T> self, Func<T, TRes> selector)
+        public static IProxy<TRes> Select<T, TRes>(this ISource<T> self, Func<T, TRes> selector)
         {
-            var lf = Lifetime.Define(self.Lifetime).Lifetime;
-            var signal = new Signal<TRes>(lf);
+            var lf = Lifetime.DefineDependent(self.Lifetime).Lifetime;
+            var signal = new Proxy<TRes>(lf);
 
-            self.Subscribe(x => { signal.Fire(selector(x)); } );
+            self.Subscribe(x =>
+            {
+                signal.Fire(selector(x));
+            });
 
             return signal;
         }                   
 
-        public static ISignal<T> Union<T>(this ISource<T> self, ISource<T> other)
+        public static IProxy<T> Union<T>(this ISource<T> self, ISource<T> other)
         {
-            var lf = Lifetime.Define(self.Lifetime.Intersect(other.Lifetime)).Lifetime;
-            var signal = new Signal<T>(lf);
+            var lf = Lifetime.DefineDependent(self.Lifetime.WhenBoth(other.Lifetime)).Lifetime;
+            var signal = new Proxy<T>(lf);
 
             self.Subscribe(x => { signal.Fire(x); });
             other.Subscribe(x => { signal.Fire(x); });
@@ -35,10 +44,10 @@ namespace DataFlow
             return signal;
         }
 
-        public static IVoidSignal Union(this IVoidSource self, IVoidSource other)
+        public static IVoidProxy Union(this IVoidSource self, IVoidSource other)
         {
-            var lf = Lifetime.Define(self.Lifetime.Intersect(other.Lifetime)).Lifetime;
-            var signal = new VoidSignal(lf);
+            var lf = Lifetime.DefineDependent(self.Lifetime.WhenBoth(other.Lifetime)).Lifetime;
+            var signal = new VoidProxy(lf);
 
             self.Subscribe(() => { signal.Fire(); });
             other.Subscribe(() => { signal.Fire(); });
@@ -46,10 +55,10 @@ namespace DataFlow
             return signal;
         }
 
-        public static IVoidSignal AsVoid<T>(this ISource<T> self)
+        public static IVoidProxy AsVoid<T>(this ISource<T> self)
         {
-            var lf = Lifetime.Define(self.Lifetime).Lifetime;
-            var signal = new VoidSignal(lf);  
+            var lf = Lifetime.DefineDependent(self.Lifetime).Lifetime;
+            var signal = new VoidProxy(lf);  
             return signal;
         }
     }

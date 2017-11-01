@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace DataFlow
 {
-    public class Signal<T> : ISignal<T>
+    public class Proxy<T> : IProxy<T>
     {
         private readonly List<Action<T>> _handlers = new List<Action<T>>();
         
         public Lifetime Lifetime { get; private set; }
 
-        public Signal(Lifetime lf)
+        public Proxy(Lifetime lf)
         {
             Lifetime = lf;
         }
@@ -34,13 +34,13 @@ namespace DataFlow
         }
     }
 
-    public class VoidSignal : IVoidSignal
+    public class VoidProxy : IVoidProxy
     {
         private readonly List<Action> _handlers = new List<Action>();
 
         public Lifetime Lifetime { get; private set; }
 
-        public VoidSignal(Lifetime lf)
+        public VoidProxy(Lifetime lf)
         {
             Lifetime = lf;
         }

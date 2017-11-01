@@ -5,10 +5,9 @@ namespace DataFlow
 {
     public class Property<T> : INotifyPropertyChanged, INotifyPropertyChanging
     {
-        private readonly string _name;
         private T _value;
 
-        private readonly ISignal<T> _changed;
+        private readonly IProxy<T> _changed;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -16,7 +15,7 @@ namespace DataFlow
 
         public T Value
         {
-            get { return _value; }
+            get => _value;
             set {
                 if (!value.Equals(_value))
                 {
@@ -30,17 +29,14 @@ namespace DataFlow
             }
         }
 
-        public string Name => _name;
+        public string Name { get; }
 
-        public ISource<T> Changed
-        {
-            get { return _changed; }
-        }
+        public ISource<T> Changed => _changed;
 
         public Property(Lifetime lf, string name = null)
         {
-            _name = name;
-            _changed = new Signal<T>(lf);
+            Name = name;
+            _changed = new Proxy<T>(lf);
         }
 
         public static implicit operator T(Property<T> v)
@@ -50,20 +46,12 @@ namespace DataFlow
 
         protected virtual void OnPropertyChanged()
         {
-            var handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(nameof(Value)));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
         }
 
         protected virtual void OnPropertyChanging()
         {
-            var handler = PropertyChanging;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangingEventArgs(nameof(Value)));
-            }
+            PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(nameof(Value)));
         }
     }
 }

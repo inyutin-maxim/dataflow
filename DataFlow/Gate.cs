@@ -2,32 +2,32 @@
 
 namespace DataFlow
 {
-    public class Gate<T> : ISignal<T>, IMultipleParentSource<T>
+    public class Gate<T> : IProxy<T>, IMultipleParentSource<T>
     {
         private readonly Lifetime _lifetime;  
-        private readonly Signal<T> _pureSignal;
+        private readonly Proxy<T> _pureProxy;
 
         public Gate(Lifetime lifetime)
         {
             _lifetime = lifetime;              
-            _pureSignal = new Signal<T>(_lifetime);
+            _pureProxy = new Proxy<T>(_lifetime);
         }
 
         public Lifetime Lifetime => _lifetime;
 
         public void Subscribe(Action<T> handler)
         {
-            _pureSignal.Subscribe(handler);
+            _pureProxy.Subscribe(handler);
         }
 
         public void Subscribe(Action<T> handler, Lifetime lf)
         {
-            _pureSignal.Subscribe(handler, lf);
+            _pureProxy.Subscribe(handler, lf);
         }
 
         public void Fire(T value)
         {
-            _pureSignal.Fire(value);
+            _pureProxy.Fire(value);
         }
 
         public void AddParentSource(ISource<T> source)

@@ -85,7 +85,9 @@ namespace DataFlowTests
             }
 
             public Property<int> Height { get; }
+
             public Property<int> Weigth { get; }
+
             public Property<int> Salary { get; } 
         }
     }

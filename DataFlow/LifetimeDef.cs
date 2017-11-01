@@ -1,23 +1,23 @@
 ﻿namespace DataFlow
 {
-  public class LifetimeDef
-  {
-    public Lifetime Lifetime { get; private set; }
-
-    public LifetimeDef()
+    public class LifetimeDef
     {
-      Lifetime = new Lifetime();
-    }
+        public Lifetime Lifetime { get; private set; }
 
-    public void Terminate()
-    {
-      for(int i = Lifetime.Actions.Count - 1; i >= 0; i--)
-      {
-        Lifetime.Actions[i]();
-      }
+        public LifetimeDef()
+        {
+            Lifetime = new Lifetime();
+        }
 
-      Lifetime.Actions.Clear();
-      Lifetime.IsTerminated = true;
+        public void Terminate()
+        {
+            for(var i = Lifetime.Actions.Count - 1; i >= 0; i--)
+            {
+                Lifetime.Actions[i]();
+            }
+
+            Lifetime.Actions.Clear();
+            Lifetime.IsTerminated = true;
+        }
     }
-  }
 }

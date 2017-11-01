@@ -5,12 +5,7 @@ namespace DataFlow
 {
     public class Lifetime
     {
-        private readonly List<Action> _actions = new List<Action>();
-
-        internal List<Action> Actions
-        {
-            get { return _actions; }
-        }
+        internal List<Action> Actions { get; } = new List<Action>();
 
         public static Lifetime Etheral = Define().Lifetime;
 
@@ -21,10 +16,15 @@ namespace DataFlow
             Add(() => IsTerminated = true);
         }
 
-        public static LifetimeDef Define(Lifetime parent = null)
+        public static LifetimeDef Define()
+        {
+            return new LifetimeDef();
+        }
+
+        public static LifetimeDef DefineDependent(Lifetime parent)
         {
             var def = new LifetimeDef();
-            parent?.Add(() => def.Terminate());
+            parent.Add(() => def.Terminate());
             return def;
         }
 
@@ -33,7 +33,7 @@ namespace DataFlow
             Actions.Add(action);
         }
 
-        public Lifetime Intersect(Lifetime other)
+        public Lifetime WhenBoth(Lifetime other)
         {
             var def = Lifetime.Define();
 

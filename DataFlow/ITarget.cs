@@ -1,11 +1,11 @@
 namespace DataFlow
 {
-    public interface ISink<in T>
+    public interface ITarget<in T>
     {
         void Fire(T value);
     }
 
-    public interface IVoidSink
+    public interface IVoidTerget
     {
         void Fire();      
     }
