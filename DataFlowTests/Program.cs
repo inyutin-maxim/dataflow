@@ -75,6 +75,22 @@ namespace DataFlowTests
             }
         }
 
+        private void TestPropertiesSubsctiption()
+        {
+            var lf = Lifetime.Define();
+
+            // Lifetime of first objects group
+            var obj = new Person(Lifetime.Define().Lifetime);
+
+            // Lifetime from another objects group
+            obj.Salary.Changed.Subscribe(x => { }, lf.Lifetime);
+            obj.Weigth.Changed.Subscribe(x => { }, lf.Lifetime);
+            obj.Height.Changed.Subscribe(x => { }, lf.Lifetime);
+
+            // Kill second objects group, unsubscribe from first group
+            lf.Terminate();
+        }
+
         class Person : IDisposable
         {
             private readonly LifetimeDef _lfd;

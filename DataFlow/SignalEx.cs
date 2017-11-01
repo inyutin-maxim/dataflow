@@ -35,7 +35,7 @@ namespace DataFlow
 
         public static IProxy<T> Union<T>(this ISource<T> self, ISource<T> other)
         {
-            var lf = Lifetime.WhenBoth(self.Lifetime, other.Lifetime);
+            var lf = Lifetime.WhenAll(self.Lifetime, other.Lifetime);
             var signal = new Proxy<T>(lf);
 
             self.Subscribe(x => { signal.Fire(x); });
@@ -46,7 +46,7 @@ namespace DataFlow
 
         public static IVoidProxy Union(this IVoidSource self, IVoidSource other)
         {
-            var lf = Lifetime.WhenBoth(self.Lifetime, other.Lifetime);
+            var lf = Lifetime.WhenAll(self.Lifetime, other.Lifetime);
             var signal = new VoidProxy(lf);
 
             self.Subscribe(() => { signal.Fire(); });

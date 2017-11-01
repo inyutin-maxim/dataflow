@@ -3,7 +3,7 @@ using System;
 namespace DataFlow
 {
     /// <summary>
-    /// Источник данных, на который можно подписаться
+    /// Data source which can be subscribed
     /// </summary>
     public interface ISource<out T>
     {
@@ -15,16 +15,17 @@ namespace DataFlow
     }
 
     /// <summary>
-    /// Источник ping'ов, на который можно подписаться
+    /// Void events source which can be subscribed
     /// </summary>
     public interface IVoidSource
     {
         Lifetime Lifetime { get; }
+
         void Subscribe(Action handler);
     }
 
     /// <summary>
-    ///
+    /// Multiple sources aggregator
     /// </summary>
     public interface IMultipleParentSource<T> : ISource<T>
     {

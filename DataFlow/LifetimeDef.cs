@@ -11,12 +11,15 @@
 
         public void Terminate()
         {
-            for(var i = Lifetime.Actions.Count - 1; i >= 0; i--)
-            {
-                Lifetime.Actions[i]();
-            }
+            if (Lifetime.IsTerminated) return;
 
-            Lifetime.Actions.Clear();
+            while(Lifetime.Actions.Count > 0)
+            {
+                var removalAction = Lifetime.Actions[Lifetime.Actions.Count - 1];
+                removalAction();
+                Lifetime.Actions.Remove(removalAction);
+            }
+            
             Lifetime.IsTerminated = true;
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataFlow
 {
@@ -33,43 +34,61 @@ namespace DataFlow
             Actions.Add(action);
         }
 
-        public static Lifetime WhenBoth(Lifetime first, Lifetime other)
-        {
-            var def = Lifetime.Define();
-
-            other.Actions.Insert(0, () =>
-            {
-                if (first.IsTerminated) def.Terminate();
-            });
-
-            first.Actions.Insert(0, () =>
-            {
-                if (other.IsTerminated) def.Terminate();
-            });
-            
-            return def.Lifetime;
-        }
-
-        public static Lifetime WhenAny(Lifetime first, Lifetime second)
+        /// <summary>
+        /// Creates new instance of Lifetime which terminates only when last 
+        /// dependent lifetime is terminated
+        /// </summary>
+        public static Lifetime WhenAll(params Lifetime[] lifetimes)
         {
             var def = Define();
 
-            Action action = () =>
+            Action subscription = null;
+            var act = new Action(() =>
             {
-                def.Terminate();
-            };
-
-            first.Actions.Insert(0, () =>
-            {
-                action();
-                second.Actions.Remove(action);
+                if (!def.Lifetime.IsTerminated && lifetimes.All(x => x.IsTerminated))
+                {
+                    def.Terminate();
+                    foreach (var lifetime in lifetimes)
+                    {
+                        // ReSharper disable once AccessToModifiedClosure
+                        lifetime.Actions.Remove(subscription);
+                    }
+                }
             });
+            subscription = act;
 
-            second.Actions.Insert(0, () =>
+            foreach (var lifetime in lifetimes)
             {
-                action();
-                first.Actions.Remove(action);
+                lifetime.Actions.Insert(0, subscription);
+            }
+
+            return def.Lifetime;
+        }
+
+        public static Lifetime WhenAny(params Lifetime[] lifetimes)
+        {
+            var def = Define();
+            var lifetimesCopy = (Lifetime[])lifetimes.Clone();
+
+            Action subscription = null;
+            var act = new Action(() =>
+            {
+                if (!def.Lifetime.IsTerminated)
+                {
+                    def.Terminate();
+                    foreach (var lifetime in lifetimes)
+                    {
+                        // ReSharper disable once AccessToModifiedClosure
+                        lifetime.Actions.Remove(subscription);
+                    }
+                }
             });
+            subscription = act;
+
+            foreach (var lifetime in lifetimesCopy)
+            {
+                lifetime.Actions.Insert(0, subscription);
+            }
 
             return def.Lifetime;
         }
