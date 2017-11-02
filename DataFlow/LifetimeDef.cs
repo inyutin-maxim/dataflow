@@ -15,11 +15,11 @@
 
             while(Lifetime.Actions.Count > 0)
             {
-                var removalAction = Lifetime.Actions[Lifetime.Actions.Count - 1];
-                removalAction();
-                Lifetime.Actions.Remove(removalAction);
+                var index = Lifetime.Actions.Count - 1;
+                Lifetime.Actions[index]();
             }
-            
+
+            Lifetime.Actions.Clear();
             Lifetime.IsTerminated = true;
         }
     }
