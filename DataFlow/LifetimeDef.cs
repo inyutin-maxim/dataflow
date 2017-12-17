@@ -1,6 +1,9 @@
-﻿namespace DataFlow
+﻿using System;
+using System.Runtime.CompilerServices;
+
+namespace DataFlow
 {
-    public class LifetimeDef
+    public class LifetimeDef : IDisposable
     {
         public Lifetime Lifetime { get; private set; }
 
@@ -11,16 +14,12 @@
 
         public void Terminate()
         {
-            if (Lifetime.IsTerminated) return;
+            Lifetime.Terminate();
+        }
 
-            while(Lifetime.Actions.Count > 0)
-            {
-                var index = Lifetime.Actions.Count - 1;
-                Lifetime.Actions[index]();
-            }
-
-            Lifetime.Actions.Clear();
-            Lifetime.IsTerminated = true;
+        public void Dispose()
+        {
+            Terminate();
         }
     }
 }

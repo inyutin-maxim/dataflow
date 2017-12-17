@@ -6,15 +6,48 @@ namespace DataFlow
 {
     public class Lifetime
     {
-        internal List<Action> Actions { get; } = new List<Action>();
+        private List<Action> Actions { get; } = new List<Action>();
 
-        public static Lifetime Etheral = Define().Lifetime;
+        public static Lifetime Eternal = Define().Lifetime;
 
         public bool IsTerminated { get; internal set; }
 
         public Lifetime()
         {
             Add(() => IsTerminated = true);
+        }
+
+        public void Add(Action action)
+        {
+            lock (Actions)
+            {
+                Actions.Add(action);
+            }
+        }
+
+        public void AddRef(object obj)
+        {
+            lock (Actions)
+            {
+                Actions.Add(() => GC.KeepAlive(obj));
+            }
+        }
+
+        internal void Terminate()
+        {
+            lock (Actions)
+            {
+                if (IsTerminated) return;
+
+                while (Actions.Count > 0)
+                {
+                    var index = Actions.Count - 1;
+                    Actions[index]();
+                }
+
+                Actions.Clear();
+                IsTerminated = true;
+            }
         }
 
         public static LifetimeDef Define()
@@ -27,11 +60,6 @@ namespace DataFlow
             var def = new LifetimeDef();
             parent.Add(() => def.Terminate());
             return def;
-        }
-
-        public void Add(Action action)
-        {
-            Actions.Add(action);
         }
 
         /// <summary>

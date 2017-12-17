@@ -15,7 +15,7 @@ namespace DataFlow
 
         public T Value
         {
-            get => _value;
+            get { return _value; }
             set {
                 if (!value.Equals(_value))
                 {

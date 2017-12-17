@@ -5,7 +5,7 @@ namespace DataFlow
     /// <summary>
     /// Data source which can be subscribed
     /// </summary>
-    public interface ISource<out T>
+    public interface ISource<T>
     {
         Lifetime Lifetime { get; }
 
