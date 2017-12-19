@@ -61,5 +61,10 @@ namespace DataFlow
             var signal = new VoidProxy(lf);  
             return signal;
         }
+
+        public static void ReportTo<T>(this ISource<T> self, IMultipleParentSource<T> other)
+        {
+            other.AddParentSource(self);
+        }
     }
 }
