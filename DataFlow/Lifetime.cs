@@ -25,6 +25,17 @@ namespace DataFlow
             }
         }
 
+        public void AddDisposable(IDisposable disposable)
+        {
+            Add(disposable.Dispose);
+        }
+
+        public void AddBracket(Action subscribe, Action unsubscribe)
+        {
+            subscribe();
+            Add(unsubscribe);
+        }
+
         public void AddRef(object obj)
         {
             lock (Actions)
@@ -39,10 +50,9 @@ namespace DataFlow
             {
                 if (IsTerminated) return;
 
-                while (Actions.Count > 0)
+                for(var i = Actions.Count-1; i >= 0; i--)
                 {
-                    var index = Actions.Count - 1;
-                    Actions[index]();
+                    Actions[i]();
                 }
 
                 Actions.Clear();
@@ -55,18 +65,18 @@ namespace DataFlow
             return new LifetimeDef();
         }
 
-        public static LifetimeDef DefineDependent(Lifetime parent)
+        public static LifetimeDef DefineDependent(OuterLifetime parent)
         {
             var def = new LifetimeDef();
-            parent.Add(() => def.Terminate());
+            parent.Lifetime.Add(() => def.Terminate());
             return def;
-        }
+        }                             
 
         /// <summary>
         /// Creates new instance of Lifetime which terminates only when last 
         /// dependent lifetime is terminated
         /// </summary>
-        public static Lifetime WhenAll(params Lifetime[] lifetimes)
+        public static Lifetime WhenAll(params OuterLifetime[] lifetimes)
         {
             var def = Define();
 
@@ -79,24 +89,24 @@ namespace DataFlow
                     foreach (var lifetime in lifetimes)
                     {
                         // ReSharper disable once AccessToModifiedClosure
-                        lifetime.Actions.Remove(subscription);
+                        lifetime.Lifetime.Actions.Remove(subscription);
                     }
                 }
             });
             subscription = act;
 
-            foreach (var lifetime in lifetimes)
+            foreach (var outerLifetime in lifetimes)
             {
-                lifetime.Actions.Insert(0, subscription);
+                outerLifetime.Lifetime.Actions.Insert(0, subscription);
             }
 
             return def.Lifetime;
         }
 
-        public static Lifetime WhenAny(params Lifetime[] lifetimes)
+        public static Lifetime WhenAny(params OuterLifetime[] lifetimes)
         {
             var def = Define();
-            var lifetimesCopy = (Lifetime[])lifetimes.Clone();
+            var lifetimesCopy = (OuterLifetime[])lifetimes.Clone();
 
             Action subscription = null;
             var act = new Action(() =>
@@ -107,15 +117,15 @@ namespace DataFlow
                     foreach (var lifetime in lifetimes)
                     {
                         // ReSharper disable once AccessToModifiedClosure
-                        lifetime.Actions.Remove(subscription);
+                        lifetime.Lifetime.Actions.Remove(subscription);
                     }
                 }
             });
             subscription = act;
 
-            foreach (var lifetime in lifetimesCopy)
+            foreach (var outerLifetime in lifetimesCopy)
             {
-                lifetime.Actions.Insert(0, subscription);
+                outerLifetime.Lifetime.Actions.Insert(0, subscription);
             }
 
             return def.Lifetime;

@@ -33,10 +33,15 @@ namespace DataFlow
 
         public ISource<T> Changed => _changed;
 
-        public Property(Lifetime lf, string name = null)
+        protected Property(Lifetime lf, string name = null)
         {
             Name = name;
             _changed = new Proxy<T>(lf);
+        }
+
+        public static Property<T> Create(Lifetime lf, string name = null)
+        {
+            return new Property<T>(lf, name);
         }
 
         public static implicit operator T(Property<T> v)

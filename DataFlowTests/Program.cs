@@ -8,49 +8,51 @@ namespace DataFlowTests
     {
         static void Main()
         {
-            var persons = new List<Person>();
-            var personsLifetimes = new List<LifetimeDef>();
-
-            var gatesLifetime = Lifetime.Define().Lifetime;
-
-            var weightsGate = new Gate<int>(gatesLifetime);
-            var heightsGate = new Gate<int>(gatesLifetime);
-            var salariesGate = new Gate<int>(gatesLifetime);
-
-            for (int i = 0; i < 10; i++)
+            using (var applf = Lifetime.Define())
             {
-                var def = Lifetime.Define();
-                var lifetime = def.Lifetime;
-                var person = new Person(lifetime);
+                var persons = new List<Person>();
+                var personsLifetimes = new List<LifetimeDef>();
+                var gatesLifetime = Lifetime.DefineDependent(applf).Lifetime;
 
-                weightsGate.AddParentSource(person.Weigth.Changed);
-                heightsGate.AddParentSource(person.Height.Changed);
-                salariesGate.AddParentSource(person.Salary.Changed);
+                // Создаем шлюзы для групповых нотификаций
+                var weightsGate = new Gate<int>(gatesLifetime);
+                var heightsGate = new Gate<int>(gatesLifetime);
+                var salariesGate = new Gate<int>(gatesLifetime);
 
-                persons.Add(person);
-                personsLifetimes.Add(def);
-            }                                       
+                // Создаем 10 персон с выделением каждой своего отрезка жизни
+                for (int i = 0; i < 10; i++)
+                {
+                    var person = new Person(applf);
 
-            var wrongHeight = weightsGate.Where(x => x > 250 || x < 0).Select(x => $"Wrong Height: {x}");
-            var wrongWeight = heightsGate.Where(x => x > 250 || x < 0).Select(x => $"Wrong Weigth: {x}");
-            var wrongSalary = salariesGate.Where(x => x < 3000).Select(x => $"Wrong Salary: {x}");
+                    weightsGate.AddParentSource(person.Weigth.Changed);
+                    heightsGate.AddParentSource(person.Height.Changed);
+                    salariesGate.AddParentSource(person.Salary.Changed);
 
-            wrongSalary
-                .Union(wrongHeight)
-                .Union(wrongWeight)
-                .Subscribe(x => Console.WriteLine($"Message: {x}"));
-                        
-            Console.WriteLine("=================");
-            PushChanges(persons);
+                    persons.Add(person);
+                }
 
-            personsLifetimes[2].Terminate();
-            personsLifetimes[5].Terminate();
-            personsLifetimes[7].Terminate();
+                var wrongHeight = weightsGate.Where(x => x > 250 || x < 0).Select(x => $"Wrong Height: {x}");
+                var wrongWeight = heightsGate.Where(x => x > 250 || x < 0).Select(x => $"Wrong Weigth: {x}");
+                var wrongSalary = salariesGate.Where(x => x < 3000).Select(x => $"Wrong Salary: {x}");
 
-            Console.WriteLine("=================");
-            PushChanges(persons);
+                wrongSalary
+                    .Union(wrongHeight)
+                    .Union(wrongWeight)
+                    .Subscribe(x => Console.WriteLine($"Message: {x}"));
 
-            Console.ReadKey();
+                Console.WriteLine("=================");
+                PushChanges(persons);
+
+                Console.WriteLine("Killing: 2th, 5th, 7th");
+                persons[2].Dispose();
+                persons[5].Dispose();
+                persons[7].Dispose();
+
+                Console.WriteLine("=================");
+                PushChanges(persons);
+
+                Console.ReadKey();
+            }
         }
 
         private static void PushChanges(List<Person> persons)
@@ -58,49 +60,33 @@ namespace DataFlowTests
             foreach (var i in new[] {0, 2, 5, 7, 9})
             {
                 Console.WriteLine($"Changing {i} person");
-                persons[i].Height.Value = 0;
-                persons[i].Height.Value = 20;
-                persons[i].Height.Value = 200;
-                persons[i].Height.Value = 2000;
+                persons[i].Height.Value = i;
+                persons[i].Height.Value = i*10;
+                persons[i].Height.Value = i*100;
+                persons[i].Height.Value = i*1000;
 
-                persons[i].Weigth.Value = 0;
-                persons[i].Weigth.Value = 20;
-                persons[i].Weigth.Value = 200;
-                persons[i].Weigth.Value = 2000;
+                persons[i].Weigth.Value = i;
+                persons[i].Weigth.Value = i*10;
+                persons[i].Weigth.Value = i*100;
+                persons[i].Weigth.Value = i*1000;
 
-                persons[i].Salary.Value = 0;
-                persons[i].Salary.Value = 20;
-                persons[i].Salary.Value = 200;
-                persons[i].Salary.Value = 4000;
+                persons[i].Salary.Value = i;
+                persons[i].Salary.Value = i*10;
+                persons[i].Salary.Value = i*100;
+                persons[i].Salary.Value = i*1000 + 1;
             }
-        }
-
-        private void TestPropertiesSubsctiption()
-        {
-            var lf = Lifetime.Define();
-
-            // Lifetime of first objects group
-            var obj = new Person(Lifetime.Define().Lifetime);
-
-            // Lifetime from another objects group
-            obj.Salary.Changed.Subscribe(x => { }, lf.Lifetime);
-            obj.Weigth.Changed.Subscribe(x => { }, lf.Lifetime);
-            obj.Height.Changed.Subscribe(x => { }, lf.Lifetime);
-
-            // Kill second objects group, unsubscribe from first group
-            lf.Terminate();
-        }
+        }                                           
 
         class Person : IDisposable
         {
             private readonly LifetimeDef _lfd;
 
-            public Person(Lifetime lf)
+            public Person(OuterLifetime lf)
             {
                 _lfd = Lifetime.DefineDependent(lf);
-                Height = new Property<int>(_lfd.Lifetime);
-                Weigth = new Property<int>(_lfd.Lifetime);
-                Salary = new Property<int>(_lfd.Lifetime);
+                Height = Property<int>.Create(_lfd.Lifetime);
+                Weigth = Property<int>.Create(_lfd.Lifetime);
+                Salary = Property<int>.Create(_lfd.Lifetime);
             }
 
             public Property<int> Height { get; }
