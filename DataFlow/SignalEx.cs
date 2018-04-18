@@ -1,4 +1,5 @@
 using System;
+using System.Contracts;
 
 namespace DataFlow
 {
@@ -31,7 +32,7 @@ namespace DataFlow
             });
 
             return signal;
-        }                   
+        }
 
         public static ISourceAdapter<T> Union<T>(this ITarget<T> self, ITarget<T> other)
         {

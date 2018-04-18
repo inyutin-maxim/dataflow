@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Contracts;
 
 namespace DataFlow
 {

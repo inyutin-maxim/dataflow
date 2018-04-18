@@ -54,6 +54,10 @@
       <Project>{6E716ED6-5303-4221-9069-E63A6C611FE8}</Project>
       <Name>DataFlow</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Lifetime\System.Contracts.csproj">
+      <Project>{A18E6616-E70F-48B6-9A9E-5D1107640F26}</Project>
+      <Name>System.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

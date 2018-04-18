@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using System.Contracts;
+
 // ReSharper disable UseNullPropagation
 
 namespace DataFlow

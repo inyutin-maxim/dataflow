@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
+using System.Contracts;
 using DataFlow;
 
 namespace DataFlowTests
