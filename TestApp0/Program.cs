@@ -16,7 +16,8 @@ namespace TestApp0
         }
     }
 
-    // Область контроля данных
+    // Область контроля данных. Если предполагается что объект может быть 
+    // разрушен отдельно от своей зависимости, вводим IDisposable
     class ObjectsLayer : IDisposable
     {
         private readonly LifetimeDef _lfd;

@@ -22,6 +22,7 @@ namespace TestApp1
 
             dataSource.X.Value = 666;  // не должно ничего напечатать
             dataSource.Y.Value = 999;  // не должно ничего напечатать
+            Console.ReadKey();
         }
     }
 

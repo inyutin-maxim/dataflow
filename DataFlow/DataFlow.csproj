@@ -43,13 +43,13 @@
     <Compile Include="OuterLifetime.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Property.cs" />
-    <Compile Include="IProxy.cs" />
-    <Compile Include="ITarget.cs" />
+    <Compile Include="ISourceAdapter.cs" />
     <Compile Include="ISource.cs" />
+    <Compile Include="ITarget.cs" />
     <Compile Include="Lifetime.cs" />
     <Compile Include="LifetimeDef.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Proxy.cs" />
+    <Compile Include="SourceAdapter.cs" />
     <Compile Include="SignalEx.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
