@@ -1,12 +1,35 @@
+using System;
+using System.Contracts;
+
 namespace DataFlow
 {
-    public interface ITarget<in T>
+    /// <summary>
+    /// Data source which can be subscribed
+    /// </summary>
+    public interface ITarget<T>
     {
-        void Fire(T value);
+        Lifetime Lifetime { get; }
+
+        void Subscribe(Action<T> handler);
+
+        void Subscribe(Action<T> handler, Lifetime lf);
     }
 
-    public interface IVoidTerget
+    /// <summary>
+    /// Void events source which can be subscribed
+    /// </summary>
+    public interface IVoidTarget
     {
-        void Fire();      
+        Lifetime Lifetime { get; }
+
+        void Subscribe(Action handler);
+    }
+
+    /// <summary>
+    /// Multiple sources aggregator
+    /// </summary>
+    public interface IGate<T> : ITarget<T>
+    {
+        void AddParentSource(ITarget<T> target);
     }
 }

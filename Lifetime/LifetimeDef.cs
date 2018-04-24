@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace DataFlow
+﻿namespace System.Contracts
 {
     public class LifetimeDef : IDisposable
     {
-        public Lifetime Lifetime { get; private set; }
+        public Lifetime Lifetime { get; }
 
         public LifetimeDef()
         {

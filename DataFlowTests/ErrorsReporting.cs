@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Contracts;
 using DataFlow;
 
 namespace DataFlowTests
@@ -25,20 +26,11 @@ namespace DataFlowTests
                 .Subscribe(x => Console.WriteLine($"  Message: {x}"));
         }
 
-        public IMultipleParentSource<int> Weights
-        {
-            get { return _weigths; }
-        }
+        public IGate<int> Weights => _weigths;
 
-        public IMultipleParentSource<int> Heigths
-        {
-            get { return _heights; }
-        }
+        public IGate<int> Heigths => _heights;
 
-        public IMultipleParentSource<int> Salaries
-        {
-            get { return _salaries; }
-        }
+        public IGate<int> Salaries => _salaries;
 
         public void Dispose()
         {

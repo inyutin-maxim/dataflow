@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DataFlowTests</RootNamespace>
     <AssemblyName>DataFlowTests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -50,6 +50,10 @@
     <ProjectReference Include="..\DataFlow\DataFlow.csproj">
       <Project>{6e716ed6-5303-4221-9069-e63a6c611fe8}</Project>
       <Name>DataFlow</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Lifetime\System.Contracts.csproj">
+      <Project>{A18E6616-E70F-48B6-9A9E-5D1107640F26}</Project>
+      <Name>System.Contracts</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

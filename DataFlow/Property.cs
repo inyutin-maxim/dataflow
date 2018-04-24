@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using System.Contracts;
+
 // ReSharper disable UseNullPropagation
 
 namespace DataFlow
@@ -7,13 +9,13 @@ namespace DataFlow
     {
         private T _value;
 
-        private readonly IProxy<T> _changed;
+        private readonly ISourceAdapter<T> _changed;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public event PropertyChangingEventHandler PropertyChanging;
 
-        public T Value
+        public virtual T Value
         {
             get { return _value; }
             set {
@@ -31,12 +33,12 @@ namespace DataFlow
 
         public string Name { get; }
 
-        public ISource<T> Changed => _changed;
+        public ITarget<T> Changed => _changed;
 
         protected Property(Lifetime lf, string name = null)
         {
             Name = name;
-            _changed = new Proxy<T>(lf);
+            _changed = new SourceAdapter<T>(lf);
         }
 
         public static Property<T> Create(Lifetime lf, string name = null)
@@ -51,12 +53,12 @@ namespace DataFlow
 
         protected virtual void OnPropertyChanged()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
         }
 
         protected virtual void OnPropertyChanging()
         {
-            PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(nameof(Value)));
+            PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(Name));
         }
     }
 }

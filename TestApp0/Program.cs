@@ -1,5 +1,5 @@
 ﻿using System;
-using DataFlow;
+using System.Contracts;
 
 namespace TestApp0
 {
@@ -13,10 +13,13 @@ namespace TestApp0
                 var dataLayer = new ObjectsLayer(lfd);
                 // ...
             }
+
+            Console.ReadKey();
         }
     }
 
-    // Область контроля данных
+    // Область контроля данных. Если предполагается что объект может быть 
+    // разрушен отдельно от своей зависимости, вводим IDisposable
     class ObjectsLayer : IDisposable
     {
         private readonly LifetimeDef _lfd;

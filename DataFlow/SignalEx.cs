@@ -1,13 +1,14 @@
 using System;
+using System.Contracts;
 
 namespace DataFlow
 {
     public static class SignalEx
     {
-        public static IProxy<T> Where<T>(this ISource<T> self, Func<T, bool> predecate)
+        public static ISourceAdapter<T> Where<T>(this ITarget<T> self, Func<T, bool> predecate)
         {
             var lf = Lifetime.DefineDependent(self.Lifetime).Lifetime;
-            var signal = new Proxy<T>(lf);
+            var signal = new SourceAdapter<T>(lf);
 
             self.Subscribe(x =>
             {
@@ -20,10 +21,10 @@ namespace DataFlow
             return signal;
         }     
 
-        public static IProxy<TRes> Select<T, TRes>(this ISource<T> self, Func<T, TRes> selector)
+        public static ISourceAdapter<TRes> Select<T, TRes>(this ITarget<T> self, Func<T, TRes> selector)
         {
             var lf = Lifetime.DefineDependent(self.Lifetime).Lifetime;
-            var signal = new Proxy<TRes>(lf);
+            var signal = new SourceAdapter<TRes>(lf);
 
             self.Subscribe(x =>
             {
@@ -31,12 +32,12 @@ namespace DataFlow
             });
 
             return signal;
-        }                   
+        }
 
-        public static IProxy<T> Union<T>(this ISource<T> self, ISource<T> other)
+        public static ISourceAdapter<T> Union<T>(this ITarget<T> self, ITarget<T> other)
         {
             var lf = Lifetime.WhenAll(self.Lifetime, other.Lifetime);
-            var signal = new Proxy<T>(lf);
+            var signal = new SourceAdapter<T>(lf);
 
             self.Subscribe(x => { signal.Fire(x); });
             other.Subscribe(x => { signal.Fire(x); });
@@ -44,10 +45,10 @@ namespace DataFlow
             return signal;
         }
 
-        public static IVoidProxy Union(this IVoidSource self, IVoidSource other)
+        public static IVoidSourceAdapter Union(this IVoidTarget self, IVoidTarget other)
         {
             var lf = Lifetime.WhenAll(self.Lifetime, other.Lifetime);
-            var signal = new VoidProxy(lf);
+            var signal = new VoidSourceAdapter(lf);
 
             self.Subscribe(() => { signal.Fire(); });
             other.Subscribe(() => { signal.Fire(); });
@@ -55,14 +56,14 @@ namespace DataFlow
             return signal;
         }
 
-        public static IVoidProxy AsVoid<T>(this ISource<T> self)
+        public static IVoidSourceAdapter AsVoid<T>(this ITarget<T> self)
         {
             var lf = Lifetime.DefineDependent(self.Lifetime).Lifetime;
-            var signal = new VoidProxy(lf);  
+            var signal = new VoidSourceAdapter(lf);  
             return signal;
         }
 
-        public static void ReportTo<T>(this ISource<T> self, IMultipleParentSource<T> other)
+        public static void ReportTo<T>(this ITarget<T> self, IGate<T> other)
         {
             other.AddParentSource(self);
         }
