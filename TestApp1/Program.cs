@@ -10,7 +10,7 @@ namespace TestApp1
         {
             DataSource dataSource;
 
-            using (var applife = Lifetime.Define())
+            using (var applife = Lifetime.Define("Root"))
             {
                 dataSource = new DataSource(applife.Lifetime);
                 dataSource.X.Changed.Select(x => $"X: {x}").Subscribe(Console.WriteLine); 

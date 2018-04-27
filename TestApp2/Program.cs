@@ -9,7 +9,7 @@ namespace TestApp2
         {
             DataSource dataSource;
 
-            using (var applf = Lifetime.Define())
+            using (var applf = Lifetime.Define("Root"))
             {
                 dataSource = new DataSource(applf.Lifetime);
                 dataSource.IntegerComes += Console.WriteLine;
@@ -24,18 +24,18 @@ namespace TestApp2
     class DataSource : IDisposable
     {
         private readonly LifetimeDef _lfd;
-        private readonly EventContainer<Action<int>> _container;
+        private readonly EventHandler<Action<int>> _handler;
 
         public DataSource(OuterLifetime outerLifetime)
         {
-            _lfd = Lifetime.DefineDependent(outerLifetime);
-            _container = new EventContainer<Action<int>>(_lfd.Lifetime);
+            _lfd = Lifetime.DefineDependent(outerLifetime, "DataSource");
+            _handler = EventHandler<Action<int>>.Create(_lfd.Lifetime);
         }
 
         public event Action<int> IntegerComes
         {
-            add { _container.Subscribe(value); }
-            remove { _container.Unsubscribe(value); }
+            add => _handler.Subscribe(value);
+            remove => _handler.Unsubscribe(value);
         }
 
         public void Trigger(int val)
@@ -45,7 +45,7 @@ namespace TestApp2
 
         protected virtual void OnIntegerComes(int obj)
         {
-            _container.Invoke(act => act(obj));
+            _handler.InvokeAsync(act => act(obj)).Wait();
         }
 
         public void Dispose()

@@ -8,7 +8,7 @@ namespace TestApp0
         static void Main(string[] args)
         {
             // Глобальная область
-            using (var lfd = Lifetime.Define())
+            using (var lfd = Lifetime.Define("Root"))
             {
                 var dataLayer = new ObjectsLayer(lfd);
                 // ...

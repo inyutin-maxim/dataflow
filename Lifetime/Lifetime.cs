@@ -1,13 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace System.Contracts
 {
+    [DebuggerDisplay("Lifetime of {Actions.Count} instances")]
     public class Lifetime
     {
         private List<Action> Actions { get; } = new List<Action>();
 
-        public static Lifetime Eternal = Define().Lifetime;
+        public static Lifetime Eternal = Define("Eternal").Lifetime;
 
         public bool IsTerminated { get; internal set; }
 
@@ -48,6 +50,7 @@ namespace System.Contracts
             lock (Actions)
             {
                 if (IsTerminated) return;
+                IsTerminated = true;
 
                 for(var i = Actions.Count-1; i >= 0; i--)
                 {
@@ -55,18 +58,17 @@ namespace System.Contracts
                 }
 
                 Actions.Clear();
-                IsTerminated = true;
             }
         }
 
-        public static LifetimeDef Define()
+        public static LifetimeDef Define(string name)
         {
-            return new LifetimeDef();
+            return new LifetimeDef(name);
         }
 
-        public static LifetimeDef DefineDependent(OuterLifetime parent)
+        public static LifetimeDef DefineDependent(OuterLifetime parent, string name = null)
         {
-            var def = new LifetimeDef();
+            var def = new LifetimeDef(name);
             parent.Lifetime.Add(() => def.Terminate());
             return def;
         }                             
@@ -77,7 +79,7 @@ namespace System.Contracts
         /// </summary>
         public static Lifetime WhenAll(params OuterLifetime[] lifetimes)
         {
-            var def = Define();
+            var def = Define($"WhenAll of ({lifetimes.Length})");
 
             Action subscription = null;
             var act = new Action(() =>
@@ -104,7 +106,7 @@ namespace System.Contracts
 
         public static Lifetime WhenAny(params OuterLifetime[] lifetimes)
         {
-            var def = Define();
+            var def = Define($"WhenAny of {lifetimes.Length}");
             var lifetimesCopy = (OuterLifetime[])lifetimes.Clone();
 
             Action subscription = null;

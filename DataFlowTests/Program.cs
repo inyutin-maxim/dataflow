@@ -9,7 +9,7 @@ namespace DataFlowTests
     {
         static void Main()
         {
-            using (var applf = Lifetime.Define())
+            using (var applf = Lifetime.Define("Root"))
             {
                 var persons = new List<Person>();
                 var errReporting = new ErrorsReporting(applf);
