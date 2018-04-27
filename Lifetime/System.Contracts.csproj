@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EventHandler%27T.cs" />
     <Compile Include="Lifetime.cs" />
     <Compile Include="LifetimeDef.cs" />
     <Compile Include="OuterLifetime.cs" />

@@ -7,6 +7,6 @@ namespace DataFlow
 
     public interface IVoidSource
     {
-        void Fire();      
+        void Fire();
     }
 }

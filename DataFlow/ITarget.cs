@@ -6,7 +6,7 @@ namespace DataFlow
     /// <summary>
     /// Data source which can be subscribed
     /// </summary>
-    public interface ITarget<T>
+    public interface ITarget<out T>
     {
         Lifetime Lifetime { get; }
 

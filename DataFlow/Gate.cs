@@ -11,7 +11,7 @@ namespace DataFlow
 
         public Gate(Lifetime lifetime)
         {
-            _lifetime = lifetime;              
+            _lifetime = lifetime;
             _pureSourceAdapter = new SourceAdapter<T>(_lifetime);
         }
 

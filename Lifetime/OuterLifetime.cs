@@ -11,13 +11,7 @@
 
         internal Lifetime Lifetime => _lifetime;
 
-        public bool IsTerminated
-        {
-            get
-            {
-                return _lifetime == null || _lifetime.IsTerminated;
-            }
-        }
+        public bool IsTerminated => _lifetime == null || _lifetime.IsTerminated;
 
         public static implicit operator OuterLifetime(Lifetime lifetime)
         {
