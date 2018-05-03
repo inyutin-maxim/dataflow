@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace System.Contracts
 {
@@ -22,7 +23,17 @@ namespace System.Contracts
         {
             lock (Actions)
             {
+                CheckTerminated();
+                if (IsTerminated) throw new AlreadyTerminatedException();
                 Actions.Add(action);
+            }
+        }
+
+        protected void Remove(Action action)
+        {
+            lock (Actions)
+            {
+                Actions.Remove(action);
             }
         }
 
@@ -33,14 +44,22 @@ namespace System.Contracts
 
         public void AddBracket(Action subscribe, Action unsubscribe)
         {
-            subscribe();
-            Add(unsubscribe);
+            lock (Actions)
+            {
+                CheckTerminated();
+                subscribe();
+                Add(unsubscribe);
+            }
         }
 
+        /// <summary>
+        /// Prevents obj from garbadge collection
+        /// </summary>
         public void AddRef(object obj)
         {
             lock (Actions)
             {
+                CheckTerminated();
                 Actions.Add(() => GC.KeepAlive(obj));
             }
         }
@@ -68,10 +87,15 @@ namespace System.Contracts
 
         public static LifetimeDef DefineDependent(OuterLifetime parent, string name = null)
         {
-            var def = new LifetimeDef(name);
-            parent.Lifetime.Add(() => def.Terminate());
+            var def = Define(name);
+
+            void TerminateDefinition() => def.Terminate();
+
+            parent.Lifetime.Add(TerminateDefinition);
+            def.Lifetime.Add(() => parent.Lifetime.Remove(TerminateDefinition));
+
             return def;
-        }                             
+        }
 
         /// <summary>
         /// Creates new instance of Lifetime which terminates only when last 
@@ -90,7 +114,7 @@ namespace System.Contracts
                     foreach (var lifetime in lifetimes)
                     {
                         // ReSharper disable once AccessToModifiedClosure
-                        lifetime.Lifetime.Actions.Remove(subscription);
+                        lifetime.Lifetime.Remove(subscription);
                     }
                 }
             });
@@ -118,7 +142,7 @@ namespace System.Contracts
                     foreach (var lifetime in lifetimes)
                     {
                         // ReSharper disable once AccessToModifiedClosure
-                        lifetime.Lifetime.Actions.Remove(subscription);
+                        lifetime.Lifetime.Remove(subscription);
                     }
                 }
             });
@@ -130,6 +154,12 @@ namespace System.Contracts
             }
 
             return def.Lifetime;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void CheckTerminated()
+        {
+            if(IsTerminated) throw new AlreadyTerminatedException("Lifetime is already terminated");
         }
     }
 }
