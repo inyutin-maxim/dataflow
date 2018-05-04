@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace System.Contracts.Tests
@@ -94,16 +96,43 @@ namespace System.Contracts.Tests
             Assert.AreEqual(12, calledCount.First(), "Pushed value");
         }
 
+        public async Task AsyncEventHandlerShouldProduceUpdates()
+        {
+            DataSource dataSource;
+            var manualEvent = new ManualResetEventSlim(false);
+            var  x = await Task.Factory.StartNew(() =>
+            {
+                dataSource = new DataSource(Lifetime.Eternal);
+                dataSource.IntegerComes += Subscription;
+                manualEvent.Set();
+
+                SynchronizationContext.Current.Wait();
+            }, CancellationToken.None, TaskCreationOptions.LongRunning);
+            manualEvent.Wait();
+
+            var SyncContext = SynchronizationContext.Current;
+            var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            var calledCount = new List<int>();
+            void Subscription(int number) => calledCount.Add(number);
+
+            dataSource.TriggerItPlease(12); 
+            dataSource.TriggerItPlease(666);
+
+            Assert.AreEqual(2, calledCount.Count, "Calls count");
+            Assert.AreEqual(12, calledCount.First(), "Pushed value");
+            Assert.AreEqual(666, calledCount.Last(), "Pushed value");
+        }
+
         sealed class DataSource : IDisposable
         {
     
             private readonly LifetimeDef _lfd;
             private readonly OnIntegerComesHandler _handler;
 
-            public DataSource(OuterLifetime outerLifetime)
+            public DataSource(OuterLifetime outerLifetime, TaskScheduler scheduler = null)
             {
                 _lfd = Lifetime.DefineDependent(outerLifetime, "DataSource");
-                _handler = OnIntegerComesHandler.Create(_lfd.Lifetime);
+                _handler = OnIntegerComesHandler.Create(_lfd.Lifetime, scheduler);
             }
 
             public event Action<int> IntegerComes
